@@ -12,69 +12,146 @@ public class RailwayTicketBookingSystem {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-
         while (true) {
+            displayMenu();
+            int choice = getUserChoice(scanner);
+
+            MenuChoice selectedChoice = MenuChoice.valueOf(choice);
+            if (selectedChoice != null) {
+                handleUserChoice(selectedChoice, scanner);
+            } else {
+                System.out.println("Invalid choice. Please select a valid option.");
+            }
+        }}
+    enum MenuChoice {
+        BOOK_TICKET(1),
+        VIEW_BOOKINGS(2),
+        EXIT(3);
+
+        private final int value;
+
+        MenuChoice(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }public static MenuChoice valueOf(int value) {
+            for (MenuChoice choice : MenuChoice.values()) {
+                if (choice.value == value) {
+                    return choice;
+                }
+            }
+            return null;
+        }}
+
+
+
+        private static void displayMenu() {
             System.out.println("1. Book Ticket");
             System.out.println("2. View Bookings");
             System.out.println("3. Exit");
             System.out.print("Enter your choice: ");
-            try {
-                int choice = Integer.parseInt(scanner.nextLine());
-            switch (choice) {
-                case 1:
-                    bookTicket(scanner);
-                    break;
-                case 2:
-                    viewBookings();
-                    break;
-                case 3:
-                    System.out.println("Exiting...");
-                    scanner.close();
-                    System.exit(0);
-                    break;
-                default:
-                    System.out.println("Invalid choice. Please select a valid option.");
-            }}
-            catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a numeric choice.");
-            }}
     }
+    private static int getUserChoice(Scanner scanner) {
+        try {
+            return Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+    private static void handleUserChoice(MenuChoice choice, Scanner scanner) {
+        switch (choice) {
+            case BOOK_TICKET:
+                bookTicket(scanner);
+                break;
+            case VIEW_BOOKINGS:
+                viewBookings();
+                break;
+            case EXIT:
+                System.out.println("Exiting...");
+                scanner.close();
+                System.exit(0);
+                break;
+        }
+    }
+//        while (true) {
+//            System.out.println("1. Book Ticket");
+//            System.out.println("2. View Bookings");
+//            System.out.println("3. Exit");
+//            System.out.print("Enter your choice: ");
+//            try {
+//                int choice = Integer.parseInt(scanner.nextLine());
+//            switch (choice) {
+//                case 1:
+//                    bookTicket(scanner);
+//                    break;
+//                case 2:
+//                    viewBookings();
+//                    break;
+//                case 3:
+//                    System.out.println("Exiting...");
+//                    scanner.close();
+//                    System.exit(0);
+//                    break;
+//                default:
+//                    System.out.println("Invalid choice. Please select a valid option.");
+//            }}
+//            catch (NumberFormatException e) {
+//                System.out.println("Invalid input. Please enter a numeric choice.");
+//            }}
+//    }
 
-    private static void bookTicket(Scanner scanner) {
-        System.out.print("Enter your name: ");
-        scanner.nextLine(); // Consume the newline character
-        String passengerName = scanner.nextLine();
-
-        String travelDate = null;
+    private static String getValidTravelDate(Scanner scanner) {
         boolean validDate = false;
+        String travelDate = null;
+
         while (!validDate) {
             System.out.print("Enter travel date (DD/MM/YY): ");
             travelDate = scanner.nextLine();
             validDate = validateDate(travelDate);
+
             if (!validDate) {
                 System.out.println("Invalid date format. Please use DD/MM/YY format.");
             }
         }
+
+        return travelDate;
+    }
+    private static void getValidTrainAndSeat(Scanner scanner, String travelDate, String passengerName) {
+        boolean seatNumberTaken = true;
         String trainNumber = null;
         String seatNumber = null;
-        boolean seatNumberTaken = true;
-        while(seatNumberTaken){
+
+        while (seatNumberTaken) {
             System.out.print("Enter Train number: ");
             trainNumber = scanner.nextLine();
-        System.out.print("Enter seat number: ");
-        seatNumber = scanner.nextLine();
+            System.out.print("Enter seat number: ");
+            seatNumber = scanner.nextLine();
 
-        if (isSeatNumberAlreadyTaken(seatNumber, trainNumber,travelDate)) {
-            System.out.println("Seat number " + seatNumber + " is already taken on train " + trainNumber + ". Please choose another seat.");
-             // Return without creating the booking
-        } else {
-            seatNumberTaken = false;
-        }}
-        Booking booking = new Booking(bookingIdCounter, passengerName, travelDate, seatNumber,trainNumber);
+            if (isSeatNumberAlreadyTaken(seatNumber, trainNumber, travelDate)) {
+                System.out.println("Seat number " + seatNumber + " is already taken on train " + trainNumber + ". Please choose another seat.");
+                // Return without creating the booking
+            } else {
+                seatNumberTaken = false;
+            }
+        }
+
+        Booking booking = new Booking(bookingIdCounter, passengerName, travelDate, seatNumber, trainNumber);
         saveBookingToFile(booking);
 
         System.out.println("Booking successful. Your booking ID is: " + bookingIdCounter);
         bookingIdCounter++;
+    }
+
+
+    private static void bookTicket(Scanner scanner) {
+        System.out.print("Enter your name: ");
+        // Consume the newline character
+        String passengerName = scanner.nextLine();
+
+        String travelDate = getValidTravelDate(scanner);
+        getValidTrainAndSeat(scanner, travelDate, passengerName);
     }
 
     private static boolean isSeatNumberAlreadyTaken(String seatNumber, String trainNumber, String travelDate) {
@@ -161,5 +238,6 @@ public class RailwayTicketBookingSystem {
         } catch (IOException e) {
             System.out.println("An error occurred while viewing bookings: " + e.getMessage());
         }
-    }
-}
+    }}
+
+
